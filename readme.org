@@ -1,0 +1,25 @@
+* 目标内容
+
+- About 页 =about=
+
+  
+- (频道名) =.title.simpleText=
+- 说明 =.description.simpleText=
+- (头像) =.avatar.thumbnails[0:3].url=
+- 详情 
+  - +Email+: Needs reCAPTCHA
+  - 位置 =.country.simpleText=
+- 观看次数 =.viewCountText.simpleText=
+- 注册日期 =.joinDateText.runs[1].text=
+- *链接* =.primaryLinks=
+  - list of =links=
+    - (redirect link) =links.navigationEndpoint.urlEndpoint.url=
+    - (link title) =links.title.simpleText=
+- (频道 id) =.channelId=
+
+  
+* 流程
+
+- 搜索一批视频
+- 索引各视频的频道, 去重
+- 索引各频道的 About 页信息, 保存 csv
