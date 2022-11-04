@@ -10,11 +10,11 @@
   - +Email+: Needs reCAPTCHA
   - 位置 =.country.simpleText=
 - 观看次数 =.viewCountText.simpleText=
-- 注册日期 =.joinDateText.runs[1].text=
+- 注册日期 =.joinedDateText.runs[1].text=
 - *链接* =.primaryLinks=
-  - list of =links=
-    - (redirect link) =links.navigationEndpoint.urlEndpoint.url=
-    - (link title) =links.title.simpleText=
+  - list of =link=
+    - (redirect link) =link.navigationEndpoint.urlEndpoint.url=
+    - (link title) =link.title.simpleText=
 - (频道 id) =.channelId=
 
   
@@ -23,3 +23,7 @@
 - 搜索一批视频
 - 索引各视频的频道, 去重
 - 索引各频道的 About 页信息, 保存 csv
+
+* 致谢
+
+- 
