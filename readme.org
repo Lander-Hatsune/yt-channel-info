@@ -16,13 +16,18 @@
     - (redirect link) =link.navigationEndpoint.urlEndpoint.url=
     - (link title) =link.title.simpleText=
 - (频道 id) =.channelId=
-
   
 * 流程
 
 - 搜索一批视频
 - 索引各视频的频道, 去重
 - 索引各频道的 About 页信息, 保存 csv
+  
+* TODO
+
+- [-] PySide GUI
+- [X] =searchVids=, =filterChannels=
+- [X] save csv
 
 * 致谢
 

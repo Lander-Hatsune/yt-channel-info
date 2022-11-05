@@ -3,10 +3,43 @@ import json
 import urllib
 import requests
 
-headers = {'Accept-Language': 'en-US'}
-cookies = {'CONSENT': 'YES+'}
+# Youtube Data API
+import googleapiclient.discovery
+youtube = None
+def setupYoutubeDataAPI(api_key: str):
+    global youtube
+    scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
+    api_service_name = "youtube"
+    api_version = "v3"
+    youtube = googleapiclient.discovery.build(
+        api_service_name, api_version, developerKey=api_key)
 
-def getChannelAbout(channel_id: str):
+def searchVids(prompt:str) -> list:
+    '''
+    Use YouTube Data API https://developers.google.com/youtube/v3
+    to search videos, return result video list.
+    '''
+    data = youtube.search().list(
+        part="snippet", maxResults=3, q=prompt).execute() # 50 is the maximum
+    assert(data['kind'] == 'youtube#searchListResponse')
+    ret = [{
+        **vid['snippet'],
+        'videoId': vid['id']['videoId'],
+    } for vid in data['items']]
+    return ret
+
+def filterChannels(vids:list) -> list:
+    ret = {vid['channelId']: vid['videoId'] for vid in vids}
+    return ret
+
+def getChannelAbout(channel_id:str) -> dict:
+    '''
+    Use requests to get 'About' page of a channel,
+    return a dict of channel information.
+    '''
+    headers = {'Accept-Language': 'en-US'}
+    cookies = {'CONSENT': 'YES+'}
+
     url = f'https://www.youtube.com/channel/{channel_id}/about'
     pattern = re.compile(r'var ytInitialData = (.*?);</script>')
     resp = requests.get(url, headers=headers, cookies=cookies)
@@ -23,25 +56,23 @@ def getChannelAbout(channel_id: str):
         ['channelAboutFullMetadataRenderer']
 
     link_pattern = re.compile(r'&q=(.*)')
+    try_redirect = \
+        lambda x: urllib.parse.unquote(link_pattern.search(x).group(1)) if \
+        link_pattern.search(x) else x
+    
     ret = {
         'title': about['title']['simpleText'],
         'description': about['description']['simpleText'],
-        'avatar': about['avatar']['thumbnails'][-1]['url'],
-        'country': about['country']['simpleText'],
+        'avatar': about['avatar']['thumbnails'],
+        'country': about['country']['simpleText'] if 'country' in about else None,
         'viewCount': about['viewCountText']['simpleText'],
         'joinedDate': about['joinedDateText']['runs'][1]['text'],
         'links': [{
             'title': link['title']['simpleText'],
-            'link': urllib.parse.unquote(link_pattern.search(
-                link['navigationEndpoint']['urlEndpoint']['url']).group(1)),
-        } for link in about['primaryLinks']],
+            'link': try_redirect(link['navigationEndpoint']['urlEndpoint']['url']),
+        } for link in about['primaryLinks']] if 'primaryLinks' in about else None,
         'channelId': about['channelId'],
     }
     assert(ret['channelId'] == channel_id)
     return ret
         
-session = requests.session() # for https://www.googleapis.com/youtube/v3/
-
-if __name__ == '__main__':
-    channelAbout = getChannelAbout('UCf5CA0OsvhhU-6AcSjT1oKQ')
-    print(channelAbout)
