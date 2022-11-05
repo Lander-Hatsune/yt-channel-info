@@ -25,10 +25,7 @@
   
 * TODO
 
-- [-] PySide GUI
+- [X] PySide GUI
 - [X] =searchVids=, =filterChannels=
 - [X] save csv
 
-* 致谢
-
-- 
