@@ -6,7 +6,7 @@ import pandas as pd
 if __name__ == '__main__':
     setupYoutubeDataAPI(sys.argv[1])
 
-    vids = searchVids(sys.argv[2])
+    vids = searchVids(sys.argv[2], int(sys.argv[3]))
     print(json.dumps(vids))
 
     channels = filterChannels(vids)

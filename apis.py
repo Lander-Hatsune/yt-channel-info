@@ -14,22 +14,42 @@ def setupYoutubeDataAPI(api_key: str):
     youtube = googleapiclient.discovery.build(
         api_service_name, api_version, developerKey=api_key)
 
-def searchVids(prompt:str) -> list:
+def searchVids(prompt:str, num:int) -> list:
     '''
     Use YouTube Data API https://developers.google.com/youtube/v3
     to search videos, return result video list.
     '''
-    data = youtube.search().list(
-        part="snippet", maxResults=3, q=prompt).execute() # 50 is the maximum
-    assert(data['kind'] == 'youtube#searchListResponse')
-    ret = [{
-        **vid['snippet'],
-        'videoId': vid['id']['videoId'],
-    } for vid in data['items']]
+    pageToken = None
+    ret = []
+    while num > len(ret):
+        data = youtube.search().list(
+            part='snippet',
+            type='video',
+            maxResults=min(num - len(ret), 50), # 50 is the maximum
+            q=prompt,
+            pageToken=pageToken,
+        ).execute()
+
+        assert(data['kind'] == 'youtube#searchListResponse')
+        num = min(num, data['pageInfo']['totalResults'])
+
+        pageToken = data['nextPageToken']
+        
+        ret += [{
+            **vid['snippet'],
+            'videoId': vid['id']['videoId'],
+        } for vid in data['items']]
+
+    assert(len(ret) == num)
     return ret
 
 def filterChannels(vids:list) -> list:
-    ret = {vid['channelId']: vid['videoId'] for vid in vids}
+    ret = {}
+    for vid in vids:
+        if vid['channelId'] in ret:
+            ret[vid['channelId']].append(vid['videoId'])
+        else:
+            ret[vid['channelId']] = [vid['videoId']]
     return ret
 
 def getChannelAbout(channel_id:str) -> dict:
@@ -59,13 +79,15 @@ def getChannelAbout(channel_id:str) -> dict:
     try_redirect = \
         lambda x: urllib.parse.unquote(link_pattern.search(x).group(1)) if \
         link_pattern.search(x) else x
+    try_get_text = \
+        lambda k: about[k]['simpleText'] if k in about else None
     
     ret = {
-        'title': about['title']['simpleText'],
-        'description': about['description']['simpleText'],
+        'title': try_get_text('title'),
+        'description': try_get_text('description'),
         'avatar': about['avatar']['thumbnails'],
-        'country': about['country']['simpleText'] if 'country' in about else None,
-        'viewCount': about['viewCountText']['simpleText'],
+        'country': try_get_text('country'),
+        'viewCount': try_get_text('viewCountText'),
         'joinedDate': about['joinedDateText']['runs'][1]['text'],
         'links': [{
             'title': link['title']['simpleText'],
