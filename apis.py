@@ -14,7 +14,7 @@ def setupYoutubeDataAPI(api_key: str):
     youtube = googleapiclient.discovery.build(
         api_service_name, api_version, developerKey=api_key)
 
-def searchVids(prompt:str, num:int) -> list:
+def searchVids(prompt:str, num:int, kwargs: dict) -> list:
     '''
     Use YouTube Data API https://developers.google.com/youtube/v3
     to search videos, return result video list.
@@ -28,6 +28,7 @@ def searchVids(prompt:str, num:int) -> list:
             maxResults=min(num - len(ret), 50), # 50 is the maximum
             q=prompt,
             pageToken=pageToken,
+            **kwargs,
         ).execute()
 
         assert(data['kind'] == 'youtube#searchListResponse')
