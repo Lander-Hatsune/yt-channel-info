@@ -28,4 +28,6 @@
 - [X] PySide GUI
 - [X] =searchVids=, =filterChannels=
 - [X] save csv
+- [-] 搜索的 Filter, "一个月以内, 按点击数排序", 以及更多
+- [-] 把 Videos 和 Channels 显示成两个 Table, 给个联系, 可增删
 
